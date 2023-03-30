@@ -339,6 +339,27 @@ func (buff *TextShapeBuffer) Rect(x,y, w, h float32) {
 	b[3].U, b[3].V = 2, 0
 	b[3].RGBA = buff.color
 }
+//画点
+func (buff *TextShapeBuffer) Point(point f32.Vec2)  {
+	b := buff.vertex[buff.pos: buff.pos+4]
+	buff.pos += 4
+
+	b[0].X, b[0].Y = point[0], point[1]
+	b[0].U, b[0].V = 2, 0
+	b[0].RGBA = buff.color
+
+	b[1].X, b[1].Y = point[0]+1, point[1]
+	b[1].U, b[1].V = 2, 0
+	b[1].RGBA = buff.color
+
+	b[2].X, b[2].Y = point[0]+1, point[1]+1
+	b[2].U, b[2].V = 2, 0
+	b[2].RGBA = buff.color
+
+	b[3].X, b[3].Y = point[0], point[1]+1
+	b[3].U, b[3].V = 2, 0
+	b[3].RGBA = buff.color
+}
 
 func (buff *TextShapeBuffer) Line(from, to f32.Vec2) {
 	b := buff.vertex[buff.pos: buff.pos+4]
