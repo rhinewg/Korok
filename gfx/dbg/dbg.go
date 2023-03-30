@@ -195,7 +195,7 @@ func NewDebugRender(vsh, fsh string) *DebugRender {
 		bk.Submit(0, id, zOrder)
 	}
 	// setup buffer, we can draw 512 rect at most!!
-	dr.Buffer.init(2048*4*1024)
+	dr.Buffer.init(2048*4*20)
 	return dr
 }
 
