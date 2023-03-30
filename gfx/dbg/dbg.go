@@ -108,6 +108,12 @@ func DrawStrScaled(x, y float32, scale float32, str string, args ...interface{})
 		gBuffer.String(x, y, fmt.Sprintf(str, args...), scale)
 	}
 }
+// draw point
+func DrawPoint(x, y float32) {
+	if (DEBUG & Draw) != 0 {
+		gBuffer.Point(f32.Vec2{x, y})
+	}
+}
 
 func AdvanceFrame() {
 	// draw hud
