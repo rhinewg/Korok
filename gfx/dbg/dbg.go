@@ -109,9 +109,30 @@ func DrawStrScaled(x, y float32, scale float32, str string, args ...interface{})
 	}
 }
 // draw point
-func DrawPoint(x, y float32) {
+func DrawPoint(x, y float32,pointSize float32) {
 	if (DEBUG & Draw) != 0 {
-		gBuffer.Point(f32.Vec2{x, y})
+		gBuffer.Point(f32.Vec2{x, y},pointSize)
+	}
+}
+
+// draw arc
+func DrawArc(point f32.Vec2, radius float32, startAngle, endAngle float32) {
+	if (DEBUG & Draw) != 0 {
+		gBuffer.Arc(point, startAngle, endAngle,radius,2)
+	}
+}
+
+// draw polygon
+func DrawPolygon(points []f32.Vec2) {
+	if (DEBUG & Draw) != 0 {
+		gBuffer.Polygon(points)
+	}
+}
+
+// draw arrow
+func DrawArrow(from,to f32.Vec2,arrowSize float32) {
+	if (DEBUG & Draw) != 0 {
+		gBuffer.Arrow(from, to, arrowSize)
 	}
 }
 
@@ -174,7 +195,7 @@ func NewDebugRender(vsh, fsh string) *DebugRender {
 		bk.Submit(0, id, zOrder)
 	}
 	// setup buffer, we can draw 512 rect at most!!
-	dr.Buffer.init(2048*4*10)
+	dr.Buffer.init(2048*4*1024)
 	return dr
 }
 
@@ -346,7 +367,7 @@ func (buff *TextShapeBuffer) Rect(x,y, w, h float32) {
 	b[3].RGBA = buff.color
 }
 //画点
-func (buff *TextShapeBuffer) Point(point f32.Vec2)  {
+func (buff *TextShapeBuffer) Point(point f32.Vec2,pointSize float32){
 	b := buff.vertex[buff.pos: buff.pos+4]
 	buff.pos += 4
 
@@ -354,18 +375,77 @@ func (buff *TextShapeBuffer) Point(point f32.Vec2)  {
 	b[0].U, b[0].V = 2, 0
 	b[0].RGBA = buff.color
 
-	b[1].X, b[1].Y = point[0]+1, point[1]
+	b[1].X, b[1].Y = point[0]+pointSize, point[1]
 	b[1].U, b[1].V = 2, 0
 	b[1].RGBA = buff.color
 
-	b[2].X, b[2].Y = point[0]+1, point[1]+1
+	b[2].X, b[2].Y = point[0]+pointSize, point[1]+pointSize
 	b[2].U, b[2].V = 2, 0
 	b[2].RGBA = buff.color
 
-	b[3].X, b[3].Y = point[0], point[1]+1
+	b[3].X, b[3].Y = point[0], point[1]+pointSize
 	b[3].U, b[3].V = 2, 0
 	b[3].RGBA = buff.color
 }
+
+//画箭头形状
+func (buff *TextShapeBuffer) Arrow(from,to f32.Vec2,arrowSize float32){
+	//画箭头的点
+	var pointArray []f32.Vec2 = make([]f32.Vec2,3)
+	//箭头角度
+	angle := math.Atan2(to[1]-from[1],to[0]-from[0])
+	//箭头的点
+	pointArray[0][0] = to[0]
+	pointArray[0][1] = to[1]
+	//箭头的点
+	pointArray[1][0] = to[0]-arrowSize*math.Cos(angle-math.Pi/6)
+	pointArray[1][1] = to[1]-arrowSize*math.Sin(angle-math.Pi/6)
+	//箭头的点
+	pointArray[2][0] = to[0]-arrowSize*math.Cos(angle+math.Pi/6)
+	pointArray[2][1] = to[1]-arrowSize*math.Sin(angle+math.Pi/6)
+	//画箭头
+	for i:=0;i<3;i++{
+		buff.Line(pointArray[i],pointArray[(i+1)%3])
+	}
+	//画箭头的线
+	buff.Line(from,to)
+}
+
+//指定原点画弧形
+func (buff *TextShapeBuffer) Arc(point f32.Vec2,fromAngle,toAngle,radius float32,pointSize float32){
+	//计算弧形的点
+	//弧形的点数
+	var pointNum int = int(math.Ceil((toAngle-fromAngle)/0.3))
+	//弧形的点
+	var pointArray []f32.Vec2 = make([]f32.Vec2,pointNum + 1)
+	//计算弧形的点
+	for i:=0;i<pointNum;i++{
+		pointArray[i][0] = point[0]+radius*math.Cos(fromAngle+float32(i)*0.3)
+		pointArray[i][1] = point[1]+radius*math.Sin(fromAngle+float32(i)*0.3)
+	}
+
+	pointArray[pointNum][0] = point[0]+radius*math.Cos(toAngle)
+	pointArray[pointNum][1] = point[1]+radius*math.Sin(toAngle)
+	//画弧形
+	for i:=0;i<pointNum;i++{
+		buff.Line(pointArray[i],pointArray[i+1])
+	}
+	//画弧形中心
+	buff.Point(point,pointSize)
+	//画弧形边界
+	buff.Line(point,pointArray[0])
+	buff.Line(point,pointArray[pointNum])
+}
+
+//画多边形
+func (buff *TextShapeBuffer) Polygon(pointArray []f32.Vec2){
+	//画多边形
+	for i:=0;i<len(pointArray)-1;i++{
+		buff.Line(pointArray[i],pointArray[i+1])
+	}
+
+}
+
 
 func (buff *TextShapeBuffer) Line(from, to f32.Vec2) {
 	b := buff.vertex[buff.pos: buff.pos+4]

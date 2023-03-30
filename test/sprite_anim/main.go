@@ -7,7 +7,9 @@ import (
 	"korok.io/korok/engi"
 	"korok.io/korok/game"
 	"korok.io/korok/gfx"
+	"korok.io/korok/gfx/dbg"
 	"korok.io/korok/hid/input"
+	"korok.io/korok/math"
 	"korok.io/korok/math/f32"
 )
 
@@ -92,6 +94,17 @@ func (m *MainScene) Update(dt float32) {
 	x := xf.Position()[0] + speed[0]
 	y := xf.Position()[1] + speed[1]
 	xf.SetPosition(f32.Vec2{x, y})
+
+	dbg.DrawArc(f32.Vec2{x,y},200,0,math.Pi)
+
+	var pointList = []f32.Vec2{
+		f32.Vec2{10,10},f32.Vec2{100,10},f32.Vec2{100,100},f32.Vec2{10,100},f32.Vec2{10,10},f32.Vec2{60,80},
+	}
+	dbg.DrawPolygon(pointList)
+
+	dbg.DrawArrow(f32.Vec2{x,y},f32.Vec2{x+100,y+100},10)
+
+	dbg.DrawPoint(x+150,y+150,10)
 }
 
 func (*MainScene) OnExit() {
@@ -101,8 +114,8 @@ func main() {
 	// Run game
 	options := &korok.Options{
 		Title: "Hello, Korok Engine",
-		Width: 480,
-		Height:320,
+		Width: 1000,
+		Height:800,
 	}
 	korok.Run(options, &MainScene{})
 }
