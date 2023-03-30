@@ -4,10 +4,10 @@ import (
 	"korok.io/korok/gfx/bk"
 	"korok.io/korok/math/f32"
 
-	"unsafe"
-	"log"
 	"fmt"
 	"korok.io/korok/math"
+	"log"
+	"unsafe"
 )
 
 type DebugEnum uint32
@@ -317,6 +317,9 @@ func (buff *TextShapeBuffer) String(x, y float32, chars string, scale float32) {
 //  |       |
 //  0-------1
 func (buff *TextShapeBuffer) Rect(x,y, w, h float32) {
+	//plot circle point and right edge
+	buff.Line(f32.Vec2{x+w/2, y+h/2}, f32.Vec2{x+w, y+h/2})
+
 	b := buff.vertex[buff.pos: buff.pos+4]
 	buff.pos += 4
 
@@ -395,6 +398,9 @@ func (buff *TextShapeBuffer) Circle(x, y float32, radius float32) {
 		y1 := y + math.Sin(a) * radius
 		path[i] = f32.Vec2{x1, y1}
 	}
+
+	buff.Line(f32.Vec2{x,y}, path[0])
+
 	for i := 0; i < segments; i++ {
 		j := i+1
 		if j == segments {
