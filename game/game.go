@@ -1,16 +1,16 @@
 package game
 
 import (
-	"korok.io/korok/engi"
-	"korok.io/korok/gfx"
-	"korok.io/korok/effect"
 	"korok.io/korok/anim"
 	"korok.io/korok/anim/frame"
 	"korok.io/korok/asset"
-	"korok.io/korok/hid/input"
+	"korok.io/korok/audio"
+	"korok.io/korok/effect"
+	"korok.io/korok/engi"
+	"korok.io/korok/gfx"
 	"korok.io/korok/gfx/dbg"
 	"korok.io/korok/gui"
-	"korok.io/korok/audio"
+	"korok.io/korok/hid/input"
 
 	"log"
 	"reflect"
@@ -79,7 +79,9 @@ func (app *appState) setFocused(focused bool) {
 var G *Game
 
 type Game struct {
-	Options; FPS; DB
+	Options
+	FPS
+	DB
 
 	// scene manager
 	SceneManager
@@ -93,6 +95,12 @@ type Game struct {
 
 	// game state
 	appState
+	spriteTable     *gfx.SpriteTable
+	meshTable       *gfx.MeshTable
+	xfTable         *gfx.TransformTable
+	textTable       *gfx.TextTable
+	psTable         *effect.ParticleSystemTable
+	spriteAnimTable *frame.FlipbookTable
 }
 
 func (g *Game) Camera() *gfx.Camera {
@@ -267,18 +275,46 @@ func (g *Game) loadTables() {
 
 	g.DB.Tables = append(g.DB.Tables, scriptTable, tagTable)
 
-	spriteTable := gfx.NewSpriteTable(MaxSpriteSize)
-	meshTable := gfx.NewMeshTable(MaxMeshSize)
-	xfTable := gfx.NewTransformTable(MaxTransformSize)
-	textTable := gfx.NewTextTable(MaxTextSize)
+	g.spriteTable = gfx.NewSpriteTable(MaxSpriteSize)
+	g.meshTable = gfx.NewMeshTable(MaxMeshSize)
+	g.xfTable = gfx.NewTransformTable(MaxTransformSize)
+	g.textTable = gfx.NewTextTable(MaxTextSize)
 
-	g.DB.Tables = append(g.DB.Tables, spriteTable, meshTable, xfTable, textTable)
+	g.DB.Tables = append(g.DB.Tables, g.spriteTable, g.meshTable, g.xfTable, g.textTable)
 
-	psTable := effect.NewParticleSystemTable(MaxParticleSize)
-	g.DB.Tables = append(g.DB.Tables, psTable)
+	g.psTable = effect.NewParticleSystemTable(MaxParticleSize)
+	g.DB.Tables = append(g.DB.Tables, g.psTable)
 
-	spriteAnimTable := frame.NewFlipbookTable(MaxSpriteSize)
-	g.DB.Tables = append(g.DB.Tables, spriteAnimTable)
+	g.spriteAnimTable = frame.NewFlipbookTable(MaxSpriteSize)
+	g.DB.Tables = append(g.DB.Tables, g.spriteAnimTable)
+}
+
+func (g *Game) GetSpriteTable()*gfx.SpriteTable  {
+	return g.spriteTable
+}
+
+func (g *Game) GetTransFormTable()*gfx.TransformTable  {
+	return g.xfTable
+}
+
+//get mesh table
+func (g *Game) GetMeshTable()*gfx.MeshTable  {
+	return g.meshTable
+}
+
+//get floobook table
+func (g *Game) GetFlipbookTable()*frame.FlipbookTable  {
+	return g.spriteAnimTable
+}
+
+//get text table
+func (g *Game) GetTextTable()*gfx.TextTable  {
+	return g.textTable
+}
+
+//get particle system table
+func (g *Game) GetParticleSystemTable()*effect.ParticleSystemTable  {
+	return g.psTable
 }
 
 func (g *Game) Input(dt float32) {
