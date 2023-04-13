@@ -349,7 +349,9 @@ func (buff *TextShapeBuffer) Rect(x,y, w, h float32) {
 
 	b := buff.vertex[buff.pos: buff.pos+4]
 	buff.pos += 4
-
+	if len(b) != 4 {
+		return
+	}
 	b[0].X, b[0].Y = x, y
 	b[0].U, b[0].V = 2, 0
 	b[0].RGBA = buff.color
@@ -370,7 +372,9 @@ func (buff *TextShapeBuffer) Rect(x,y, w, h float32) {
 func (buff *TextShapeBuffer) Point(point f32.Vec2,pointSize float32){
 	b := buff.vertex[buff.pos: buff.pos+4]
 	buff.pos += 4
-
+	if len(b) != 4 {
+		return
+	}
 	b[0].X, b[0].Y = point[0], point[1]
 	b[0].U, b[0].V = 2, 0
 	b[0].RGBA = buff.color
@@ -444,6 +448,7 @@ func (buff *TextShapeBuffer) Polygon(pointArray []f32.Vec2){
 		buff.Line(pointArray[i],pointArray[i+1])
 	}
 
+	buff.Line(pointArray[len(pointArray)-1],pointArray[0])
 }
 
 
