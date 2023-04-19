@@ -116,9 +116,9 @@ func DrawPoint(x, y float32,pointSize float32) {
 }
 
 // draw arc
-func DrawArc(point f32.Vec2, radius float32, startAngle, endAngle float32) {
+func DrawArc(point f32.Vec2, radius float32, angle, angleRange float32) {
 	if (DEBUG & Draw) != 0 {
-		gBuffer.Arc(point, startAngle, endAngle,radius,2)
+		gBuffer.Arc(point, angle, angleRange,radius,2)
 	}
 }
 
@@ -416,29 +416,26 @@ func (buff *TextShapeBuffer) Arrow(from,to f32.Vec2,arrowSize float32){
 }
 
 //指定原点画弧形
-func (buff *TextShapeBuffer) Arc(point f32.Vec2,fromAngle,toAngle,radius float32,pointSize float32){
-	//计算弧形的点
-	//弧形的点数
-	var pointNum int = int(math.Ceil((toAngle-fromAngle)/0.3))
+func (buff *TextShapeBuffer) Arc(point f32.Vec2,angle,angleRange,radius float32,pointSize float32){
 	//弧形的点
-	var pointArray []f32.Vec2 = make([]f32.Vec2,pointNum + 1)
-	//计算弧形的点
-	for i:=0;i<pointNum;i++{
-		pointArray[i][0] = point[0]+radius*math.Cos(fromAngle+float32(i)*0.3)
-		pointArray[i][1] = point[1]+radius*math.Sin(fromAngle+float32(i)*0.3)
+	var pointArray []*f32.Vec2 = make([]*f32.Vec2,0)
+	for i := angle - angleRange/2.0; i < math.Ceil(angle + angleRange/2.0) ; i+=angleRange/6 {
+		if i > angle + angleRange/2.0 {
+			i = angle + angleRange/2.0
+			pointArray = append(pointArray, &f32.Vec2{point[0]+radius*math.Cos(i),point[1]+radius*math.Sin(i)})
+			break
+		}
+		pointArray = append(pointArray, &f32.Vec2{point[0]+radius*math.Cos(i),point[1]+radius*math.Sin(i)})
 	}
-
-	pointArray[pointNum][0] = point[0]+radius*math.Cos(toAngle)
-	pointArray[pointNum][1] = point[1]+radius*math.Sin(toAngle)
 	//画弧形
-	for i:=0;i<pointNum;i++{
-		buff.Line(pointArray[i],pointArray[i+1])
+	for i:=0;i<len(pointArray)-1;i++{
+		buff.Line(*pointArray[i],*pointArray[i+1])
 	}
 	//画弧形中心
 	buff.Point(point,pointSize)
 	//画弧形边界
-	buff.Line(point,pointArray[0])
-	buff.Line(point,pointArray[pointNum])
+	buff.Line(point,*pointArray[0])
+	buff.Line(point,*pointArray[len(pointArray)-1])
 }
 
 //画多边形
